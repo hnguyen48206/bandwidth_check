@@ -1,4 +1,3 @@
-
 const os = require("os");
 const { exec } = require("child_process");
 const axios = require('axios').default;
@@ -7,6 +6,7 @@ const EventEmitter = require('events');
 const FastSpeedtest = require("fast-speedtest-api");
 const cloudFlare = require('speed-cloudflare-cli');
 const puppeteer = require('puppeteer');
+const { isNumberObject } = require("util/types");
 const imageAddr = 'downloadFileByFileID/627485144dee070016d23bb8';
 const downloadSize = 10506316;
 var startTime = null;
@@ -22,6 +22,8 @@ var currentTotalDownloadSpeed = null;
 var currentTotalUploadSpeed = null;
 var usageNotifier = new EventEmitter();
 const fastToken = 'YXNkZmFzZGxmbnNkYWZoYXNkZmhrYWxm';
+var currentCheckIntervalSetup = null
+var currentNotiIntervalSetup = null
 var speedtest = new FastSpeedtest({
     token: fastToken, // required
     verbose: false, // default: false
@@ -31,8 +33,13 @@ var speedtest = new FastSpeedtest({
     bufferSize: 8, // default: 8
     unit: FastSpeedtest.UNITS.Mbps
 });
+var config = {
+    IP: null,
+    notificationInterval: 1000,
+    testType: 'self'
+}
 function initUsageNotification() {
-    getDataUsage().then(res => {
+    getDataUsage().then(res => {      
         if (os.platform() == 'win32') {
             let usage = extractRXTXWin(res);
             if (currentRecieve == null) {
@@ -44,62 +51,80 @@ function initUsageNotification() {
                 currentUploadUsage = Number(usage[1]) - currentSend;
                 currentRecieve = Number(usage[0]);
                 currentSend = Number(usage[1]);
-
-                usageNotifier.emit('network_usage', {
-                    downloadBandwidth: currentTotalDownloadSpeed + ' Mbps',
-                    uploadBandwidth: currentTotalUploadSpeed + ' Mbps',
-                    currentDownloadUsage: ((currentDownloadUsage / 1000 / 1000) * 8).toFixed(2) + ' Mbps',
-                    currentUploadUsage: ((currentUploadUsage / 1000 / 1000) * 8).toFixed(2) + ' Mbps'
-                })
             }
         }
         else {
-            let usage = extractRXTXLinux(res);
-            if (currentRecieve == null) {
-                currentRecieve = Number(usage[0]);
-                currentSend = Number(usage[1]);
+            let usage = extractRXTXLinux_Alpine(res);
+            let down;
+            let up;
+            if (config.IP != null) {
+                for (let i = 0; i < usage.networkInterface.length; ++i) {
+                    if (usage.networkInterface[i].includes(config.IP)) {
+                        console.log(config.IP);
+                        down = usage.speedArray[i * 2];
+                        up = usage.speedArray[i * 2 + 1];
+                        break;
+                    }
+                }
             }
             else {
-                currentDownloadUsage = Number(usage[0]) - currentRecieve;
-                currentUploadUsage = Number(usage[1]) - currentSend;
-                currentRecieve = Number(usage[0]);
-                currentSend = Number(usage[1]);
-
-                usageNotifier.emit('network_usage', {
-                    downloadBandwidth: currentTotalDownloadSpeed + ' Mbps',
-                    uploadBandwidth: currentTotalUploadSpeed + ' Mbps',
-                    currentDownloadUsage: ((currentDownloadUsage / 1000 / 1000) * 8).toFixed(2) + ' Mbps',
-                    currentUploadUsage: ((currentUploadUsage / 1000 / 1000) * 8).toFixed(2) + ' Mbps'
-                })
+                console.log(config.IP);
+                down = usage.speedArray[0];
+                up = usage.speedArray[1];
+            }
+    
+            if (currentRecieve == null) {
+                currentRecieve = Number(down);
+                currentSend = Number(up);
+            }
+            else {
+                currentDownloadUsage = Number(down) - currentRecieve;
+                currentUploadUsage = Number(up) - currentSend;
+                currentRecieve = Number(down);
+                currentSend = Number(up);  
             }
         }
     });
 }
-async function initNetworkCheck(type) {
+async function initNetworkCheck(configuration) {
+    if (configuration != null) {
+        if (configuration.IP != null)
+            config.IP = configuration.IP
+        if (configuration.notificationInterval != null && !isNaN(configuration.notificationInterval))
+            config.notificationInterval = configuration.notificationInterval
+        if (configuration.testType != null)
+            config.testType = configuration.testType
+    }
+
+    if (currentCheckIntervalSetup != null)
+        clearInterval(currentCheckIntervalSetup);
+    if(currentNotiIntervalSetup != null)
+        clearInterval(currentNotiIntervalSetup);
+
     try {
-        if (type == 'self') {
+        if (config.testType == 'self') {
             currentTotalDownloadSpeed = await getDownloadSpeed();
             currentTotalUploadSpeed = await getUploadSpeed();
         }
-        else if (type == 'fast') {
+        else if (config.testType == 'fast') {
             currentTotalDownloadSpeed = await speedtest.getSpeed();
             currentTotalDownloadSpeed = currentTotalDownloadSpeed.toFixed(2);
             currentTotalUploadSpeed = await getUploadSpeed();
         }
-        else if (type == 'cloudflare') {
+        else if (config.testType == 'cloudflare') {
             cloudFlare().then(res => {
                 currentTotalDownloadSpeed = res.downloadSpeed;
                 currentTotalUploadSpeed = res.uploadSpeed;
-            }).catch(err =>{
+            }).catch(err => {
                 throw err;
             })
         }
-        else if (type == 'speedtest') {
+        else if (config.testType == 'speedtest') {
             let browser = await puppeteer.launch({
                 headless: true,
                 args: ['--single-process', '--no-zygote', '--no-sandbox']
             })
-            try {                
+            try {
                 let page = await browser.newPage();
                 page.setDefaultNavigationTimeout(0);
                 await page.setCacheEnabled(false);
@@ -114,22 +139,28 @@ async function initNetworkCheck(type) {
                 let downloadSpeed = await page.evaluate(el => el.innerHTML, downloadItem)
                 let uploadItem = await page.$(".result-item-upload .result-data span");
                 let uploadSpeed = await page.evaluate(el => el.innerHTML, uploadItem)
-
-                // console.log(downloadSpeed)
-                // console.log(uploadSpeed)
-
                 currentTotalDownloadSpeed = downloadSpeed;
                 currentTotalUploadSpeed = uploadSpeed;
-                browser.close();                
+                browser.close();
             } catch (error) {
-                browser.close();                
+                browser.close();
                 throw error;
-            }                       
+            }
         }
-        setInterval(function () {
+        currentCheckIntervalSetup = setInterval(function () {
             if (currentTotalDownloadSpeed != null && currentTotalUploadSpeed != null)
                 initUsageNotification();
         }, 1000);
+        console.log('Interval hiện tại', config.notificationInterval)
+        currentNotiIntervalSetup = setInterval(() => {
+            if(currentDownloadUsage!=null && currentUploadUsage!=null)
+            usageNotifier.emit('network_usage', {
+                downloadBandwidth: currentTotalDownloadSpeed + ' Mbps',
+                uploadBandwidth: currentTotalUploadSpeed + ' Mbps',
+                currentDownloadUsage: ((currentDownloadUsage / 1000 / 1000) * 8).toFixed(2) + ' Mbps',
+                currentUploadUsage: ((currentUploadUsage / 1000 / 1000) * 8).toFixed(2) + ' Mbps'
+            })
+        }, config.notificationInterval);
         return true;
     } catch (error) {
         // console.log(error)
@@ -158,7 +189,34 @@ function getDataUsage() {
         });
     });
 }
-function extractRXTXLinux(srcStr) {
+function extractRXTXLinux_Alpine(srcStr) {
+    let ipStart = indexes(srcStr, 'mtu');
+    let ipEnd = indexes(srcStr, 'collisions');
+    let networkInterface = [];
+    if (ipStart.length == ipEnd.length) {
+        for (let i = 0; i < ipStart.length; ++i) {
+            let subString = srcStr.substring(ipStart[i], ipEnd[i]);
+            networkInterface.push(subString)
+        }
+    }
+
+    let startRes = indexes(srcStr, 'bytes');
+    let endRes = indexes(srcStr, 'B)');
+    let result = []
+    if (startRes.length == endRes.length) {
+        for (let i = 0; i < startRes.length; ++i) {
+            let subString = srcStr.substring(startRes[i], endRes[i]);
+            let splitArr = subString.split(' ')
+            if (splitArr.length > 2)
+                result.push(splitArr[1]);
+        }
+    }
+    return {
+        speedArray: result,
+        networkInterface: networkInterface
+    }
+}
+function extractRXTXLinux_Ubuntu(srcStr) {
     let startRes = indexes(srcStr, 'bytes');
     let endRes = indexes(srcStr, ' (');
     let result = []
@@ -168,15 +226,6 @@ function extractRXTXLinux(srcStr) {
         }
     }
     return result
-}
-function indexes(source, find) {
-    var result = [];
-    for (i = 0; i < source.length; ++i) {
-        if (source.substring(i, i + find.length) == find) {
-            result.push(i);
-        }
-    }
-    return result;
 }
 function extractRXTXWin(srcStr) {
     let startRes = indexes(srcStr, 'Bytes');
@@ -194,6 +243,24 @@ function extractRXTXWin(srcStr) {
         temp = result[0].replace(/  +/g, '|').split('|')
     }
     return temp;
+}
+function indexes(source, find) {
+    var result = [];
+    for (i = 0; i < source.length; ++i) {
+        if (source.substring(i, i + find.length) == find) {
+            result.push(i);
+        }
+    }
+    return result;
+}
+function indexes(source, find) {
+    var result = [];
+    for (i = 0; i < source.length; ++i) {
+        if (source.substring(i, i + find.length) == find) {
+            result.push(i);
+        }
+    }
+    return result;
 }
 async function getDownloadSpeed() {
     startTime = (new Date()).getTime();
