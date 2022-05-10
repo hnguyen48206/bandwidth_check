@@ -24,4 +24,11 @@ npm i https://github.com/hnguyen48206/network_bandwidth_check.git
 	  + "fast" : sử dụng api của netflix.
 	  + "cloudflare" : sử dụng api của cloudflare.
 	  + "speedtest" : scraping data của speedtest.
- - Sau khi sử dụng hàm init thì có thể subscribe vào usageNotifier để nhận tin push về băng thông cũng như lưu lượng sử dụng thực tế theo mỗi giây.
+ - Sau khi sử dụng hàm init thì có thể subscribe vào usageNotifier để nhận tin push về băng thông cũng như lưu lượng sử dụng thực tế theo mỗi giây. Mẫu data nhận được: 
+
+    {
+        downloadBandwidth: '388.84 Mbps',
+        uploadBandwidth: '743.88 Mbps',
+        currentDownloadUsage: '74.53 Mbps',
+        currentUploadUsage: '1.41 Mbps'
+    }
