@@ -4,7 +4,7 @@ npm i https://github.com/hnguyen48206/network_bandwidth_check.git
 
 # Ví Dụ Sử Dụng
 
-    const  bandwidthcheck = require('./index')
+    const  bandwidthcheck = require('./node_modules/getnetworkusage/index')
     
     bandwidthcheck.initNetworkCheck('speedtest').then(res=>{
     
