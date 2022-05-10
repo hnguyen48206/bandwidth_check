@@ -1,6 +1,6 @@
 # Cài Đặt
 Chạy lệnh
-npm i https://github.com/hnguyen48206/bandwidth_check.git
+npm i https://github.com/hnguyen48206/network_bandwidth_check.git
 
 # Ví Dụ Sử Dụng
 
