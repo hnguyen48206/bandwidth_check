@@ -47,8 +47,14 @@ function initUsageNotification() {
                 currentSend = Number(usage[1]);
             }
             else {
+                if(Number(usage[0]) - currentRecieve>0)
                 currentDownloadUsage = Number(usage[0]) - currentRecieve;
+                else
+                currentDownloadUsage = 0
+                if(currentUploadUsage = Number(usage[1]) - currentSend>0)
                 currentUploadUsage = Number(usage[1]) - currentSend;
+                else
+                currentUploadUsage = 0
                 currentRecieve = Number(usage[0]);
                 currentSend = Number(usage[1]);
             }
@@ -78,10 +84,16 @@ function initUsageNotification() {
                 currentSend = Number(up);
             }
             else {
-                currentDownloadUsage = Number(down) - currentRecieve;
-                currentUploadUsage = Number(up) - currentSend;
-                currentRecieve = Number(down);
-                currentSend = Number(up);  
+                if(Number(usage[0]) - currentRecieve>0)
+                currentDownloadUsage = Number(usage[0]) - currentRecieve;
+                else
+                currentDownloadUsage = 0
+                if(currentUploadUsage = Number(usage[1]) - currentSend>0)
+                currentUploadUsage = Number(usage[1]) - currentSend;
+                else
+                currentUploadUsage = 0
+                currentRecieve = Number(usage[0]);
+                currentSend = Number(usage[1]);
             }
         }
     });
