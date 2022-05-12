@@ -65,7 +65,7 @@ function initUsageNotification() {
                 if (config.IP != null) {
                     for (let i = 0; i < usage.networkInterface.length; ++i) {
                         if (usage.networkInterface[i].includes(config.IP)) {
-                            console.log(config.IP);
+                            // console.log(config.IP);
                             down = usage.speedArray[i * 2];
                             up = usage.speedArray[i * 2 + 1];
                             break;
@@ -73,7 +73,7 @@ function initUsageNotification() {
                     }
                 }
                 else {
-                    console.log(config.IP);
+                    // console.log(config.IP);
                     down = usage.speedArray[0];
                     up = usage.speedArray[1];
                 }
@@ -164,7 +164,7 @@ async function initNetworkCheck(configuration) {
             if (currentTotalDownloadSpeed != null && currentTotalUploadSpeed != null)
                 initUsageNotification();
         }, 1000);
-        // console.log('Interval hiện tại', config.notificationInterval)
+        // // console.log('Interval hiện tại', config.notificationInterval)
         currentNotiIntervalSetup = setInterval(() => {
             if (currentDownloadUsage != null && currentUploadUsage != null)
                 usageNotifier.emit('network_usage', {
@@ -176,7 +176,7 @@ async function initNetworkCheck(configuration) {
         }, config.notificationInterval);
         return true;
     } catch (error) {
-        // console.log(error)
+        // // console.log(error)
         return false;
     }
 }
@@ -190,14 +190,14 @@ function getDataUsage() {
 
         exec(command, (error, stdout, stderr) => {
             if (error) {
-                // console.log(error);
+                // // console.log(error);
                 reject(null);
             }
             if (stderr) {
-                // console.log(stderr);
+                // // console.log(stderr);
                 reject(null);
             }
-            // console.log(stdout.toString());
+            // // console.log(stdout.toString());
             resolve(stdout.toString());
         });
     });
@@ -211,8 +211,8 @@ async function extractRXTXLinux_Alpine(srcStr) {
         ipStart = ipStart.concat(indexes(srcStr, interfaces[i]))
     }
     let ipEnd = indexes(srcStr, 'collisions');
-    console.log(ipStart.length)
-    console.log(ipEnd.length)
+    // console.log(ipStart.length)
+    // console.log(ipEnd.length)
     let networkInterface = [];
     if (ipStart.length == ipEnd.length) {
         for (let i = 0; i < ipStart.length; ++i) {
@@ -279,15 +279,15 @@ function getLinuxInterfacesList() {
     return new Promise((resolve, reject) => {
         exec('ls /sys/class/net', (error, stdout, stderr) => {
             if (error) {
-                // console.log(error);
+                // // console.log(error);
                 reject(null);
             }
             if (stderr) {
-                // console.log(stderr);
+                // // console.log(stderr);
                 reject(null);
             }
             let arr = stdout.toString().replace(/\s+/g, ' ').trim().split(' ').filter(function(e) { return e !== 'bonding_masters' });
-            console.log(arr)
+            // console.log(arr)
             resolve(arr);
         });
     });
@@ -297,7 +297,7 @@ async function getDownloadSpeed() {
     startTime = (new Date()).getTime();
     let cacheBuster = '?nnn=' + startTime;
     imgAfterDownloaded = await axios.get(baseURL + imageAddr + cacheBuster, { responseType: "blob" })
-    // console.log('Done testing download')
+    // // console.log('Done testing download')
     endTime = (new Date()).getTime();
     const duration = (endTime - startTime) / 1000;
     const bitsLoaded = downloadSize * 8;
@@ -322,7 +322,7 @@ async function getUploadSpeed() {
             headers: { 'Content-Type': 'multipart/form-data;boundary=' + form.getBoundary() }
         })
         endTime = (new Date()).getTime();
-        // console.log('Done testing upload')
+        // // console.log('Done testing upload')
 
         if (res) {
             delFileAfterDoneUploading(res.data.data.fileName);
@@ -334,13 +334,13 @@ async function getUploadSpeed() {
         const speedMbps = (speedKbps / 1024).toFixed(2);
         return Number(speedMbps);
     } catch (error) {
-        // console.log(error)
+        // // console.log(error)
         return null;
     }
 }
 async function delFileAfterDoneUploading(fileName) {
     let res = await axios.get(baseURL + 'deleteFileByFileName/' + fileName);
-    // console.log(res)
+    // // console.log(res)
 }
 module.exports = {
     "initNetworkCheck": initNetworkCheck,
