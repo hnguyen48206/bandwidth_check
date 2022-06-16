@@ -205,8 +205,8 @@ async function initNetworkCheck(configuration) {
                 // console.log(`Ping: ${result.ping} ms`);
                 // console.log(`Download speed: ${result.downloadSpeed} MBps`);
                 // console.log(`Upload speed: ${result.uploadSpeed} Mbps`);
-                currentTotalDownloadSpeed = result.downloadSpeed;
-                currentTotalUploadSpeed = result.uploadSpeed;
+                currentTotalDownloadSpeed = result.downloadSpeed.toFixed(2);
+                currentTotalUploadSpeed = result.uploadSpeed.toFixed(2);
             }).catch(e => {
                 throw e
             });
