@@ -165,7 +165,7 @@ async function initNetworkCheck(configuration) {
         else if (config.testType == 'speedtest') {
             let browser = await puppeteer.launch({
                 headless: true,
-                args: ['--single-process', '--no-zygote', '--no-sandbox', '--headless', '--disable-gpu']
+                args: ['--single-process', '--no-zygote', '--no-sandbox', '--headless', '--disable-gpu', '--disable-setuid-sandbox']
             })
             try {
                 let page = await browser.newPage();
