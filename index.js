@@ -103,7 +103,7 @@ function processUsageData(usage)
     }
     else {
         console.log('Down hiện tại: ', down)
-        console.log('Down trước đó: ', currentDownloadUsage)
+        console.log('Down trước đó: ', currentRecieve)
         if (down - currentRecieve > 0)
             currentDownloadUsage = down - currentRecieve;
         
