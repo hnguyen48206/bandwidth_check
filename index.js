@@ -278,7 +278,7 @@ async function extractRXTXLinux_Alpine(srcStr) {
         networkInterface: networkInterface
     }
 }
-function extractRXTXLinux_Ubuntu(srcStr) {
+async function extractRXTXLinux_Ubuntu(srcStr) {
     //// find IP list
     let startRes = indexes(srcStr, 'encap');
     let endRes = indexes(srcStr, 'Mask');
