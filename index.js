@@ -105,10 +105,10 @@ function processUsageData(usage)
         console.log('Down hiện tại: ', down)
         console.log('Down trước đó: ', currentRecieve)
         if (down - currentRecieve > 0)
-            currentDownloadUsage = down - currentRecieve;
+            currentDownloadUsage = currentDownloadUsage + (down - currentRecieve);
         
         if (up - currentSend > 0)
-            currentUploadUsage = up - currentSend;
+            currentUploadUsage = currentUploadUsage + (up - currentSend);
         currentRecieve = Number(down);
         currentSend = Number(up);
     }
