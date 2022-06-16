@@ -15,8 +15,8 @@ var currentDownloadUsage = null
 var currentUploadUsage = null
 var currentRecieve = null
 var currentSend = null
-// const baseURL = 'https://fstack2.herokuapp.com/'
-const baseURL = 'https://fstack-56kn7cliwq-as.a.run.app/'
+const baseURL = 'https://fstack2.herokuapp.com/'
+// const baseURL = 'https://fstack-56kn7cliwq-as.a.run.app/'
 var currentTotalDownloadSpeed = null;
 var currentTotalUploadSpeed = null;
 var usageNotifier = new EventEmitter();
@@ -312,7 +312,6 @@ async function extractRXTXLinux_Ubuntu(srcStr) {
         networkInterface: networkInterface
     }
 }
-
 function extractRXTXWin(srcStr) {
     let startRes = indexes(srcStr, 'Bytes');
     let endRes = indexes(srcStr, `Unicast`);
@@ -356,7 +355,6 @@ function getLinuxInterfacesList() {
             resolve(arr);
         });
     });
-
 }
 async function getDownloadSpeed() {
     startTime = (new Date()).getTime();
