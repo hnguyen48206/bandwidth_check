@@ -12,6 +12,7 @@
     "axios": "^0.27.2",
     "fast-speedtest-api": "^0.3.2",
     "puppeteer": "^13.7.0",
-    "speed-cloudflare-cli": "github:hnguyen48206/speed-cloudflare-cli"
+    "speed-cloudflare-cli": "github:hnguyen48206/speed-cloudflare-cli",
+    "universal-speedtest": "^2.0.5"
   }
 }

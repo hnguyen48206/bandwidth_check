@@ -43,7 +43,8 @@ var averageDownloadSpeedArray = []
 var averageUploadSpeedArray = []
 var currentAverageDownloadUsageWithinSeconds = 0
 var currentAverageUploadUsageWithinSeconds = 0
-
+const { UniversalSpeedtest, SpeedUnits } = require('universal-speedtest');
+var universalSpeedtest 
 function initUsageNotification() {
     getDataUsage().then(res => {
         if (os.platform() == 'win32') {
@@ -192,6 +193,23 @@ async function initNetworkCheck(configuration) {
                 browser.close();
                 throw error;
             }
+        }
+        else if (config.testType == 'universal') {
+            if(universalSpeedtest==null)
+            universalSpeedtest = new UniversalSpeedtest({
+                measureUpload: true,
+                downloadUnit: SpeedUnits.MBps,
+                wait: true
+            });
+            universalSpeedtest.runSpeedtestNet().then(result => {
+                // console.log(`Ping: ${result.ping} ms`);
+                // console.log(`Download speed: ${result.downloadSpeed} MBps`);
+                // console.log(`Upload speed: ${result.uploadSpeed} Mbps`);
+                currentTotalDownloadSpeed = result.downloadSpeed;
+                currentTotalUploadSpeed = result.uploadSpeed;
+            }).catch(e => {
+                throw e
+            });
         }
         currentCheckIntervalSetup = setInterval(function () {
             if (currentTotalDownloadSpeed != null && currentTotalUploadSpeed != null)
