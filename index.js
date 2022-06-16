@@ -6,6 +6,7 @@ const EventEmitter = require('events');
 const FastSpeedtest = require("fast-speedtest-api");
 const cloudFlare = require('speed-cloudflare-cli');
 const puppeteer = require('puppeteer');
+const { average } = require("fast-speedtest-api");
 const imageAddr = 'downloadFileByFileID/627485144dee070016d23bb8';
 const downloadSize = 10506316;
 var startTime = null;
@@ -36,8 +37,14 @@ var config = {
     IP: null,
     notificationInterval: 1000,
     testType: 'self',
-    linuxDistro: 'ubuntu'
+    linuxDistro: 'ubuntu',
+    averageUsageWithinSeconds: 10
 }
+var averageDownloadSpeedArray = []
+var averageUploadSpeedArray = []
+var currentAverageDownloadUsageWithinSeconds = 0
+var currentAverageUploadUsageWithinSeconds = 0
+
 function initUsageNotification() {
     getDataUsage().then(res => {
         if (os.platform() == 'win32') {
@@ -74,8 +81,7 @@ function initUsageNotification() {
     });
 }
 
-function processUsageData(usage)
-{
+function processUsageData(usage) {
     let down;
     let up;
     if (config.IP != null) {
@@ -105,12 +111,19 @@ function processUsageData(usage)
         console.log('Down hiện tại: ', down)
         console.log('Down trước đó: ', currentRecieve)
         if (down - currentRecieve > 0)
-            currentDownloadUsage = currentDownloadUsage + (down - currentRecieve);
-        
+            currentDownloadUsage = down - currentRecieve;
         if (up - currentSend > 0)
-            currentUploadUsage = currentUploadUsage + (up - currentSend);
+            currentUploadUsage = up - currentSend;
         currentRecieve = Number(down);
         currentSend = Number(up);
+    }
+    averageDownloadSpeedArray.push(currentDownloadUsage);
+    averageUploadSpeedArray.push(currentUploadUsage);
+    if (averageDownloadSpeedArray.length == config.averageUsageWithinSeconds) {
+        currentAverageDownloadUsageWithinSeconds = average(averageDownloadSpeedArray, averageDownloadSpeedArray.length);
+        currentAverageUploadUsageWithinSeconds = average(averageUploadSpeedArray, averageUploadSpeedArray.length);
+        averageDownloadSpeedArray = []
+        averageUploadSpeedArray = []
     }
 }
 async function initNetworkCheck(configuration) {
@@ -123,6 +136,8 @@ async function initNetworkCheck(configuration) {
             config.testType = configuration.testType
         if (configuration.linuxDistro != null)
             config.linuxDistro = configuration.linuxDistro
+        if (configuration.averageUsageWithinSeconds != null)
+            config.averageUsageWithinSeconds = configuration.averageUsageWithinSeconds
     }
 
     if (currentCheckIntervalSetup != null)
@@ -187,7 +202,9 @@ async function initNetworkCheck(configuration) {
                     downloadBandwidth: currentTotalDownloadSpeed + ' Mbps',
                     uploadBandwidth: currentTotalUploadSpeed + ' Mbps',
                     currentDownloadUsage: ((currentDownloadUsage / 1000 / 1000) * 8).toFixed(2) + ' Mbps',
-                    currentUploadUsage: ((currentUploadUsage / 1000 / 1000) * 8).toFixed(2) + ' Mbps'
+                    currentUploadUsage: ((currentUploadUsage / 1000 / 1000) * 8).toFixed(2) + ' Mbps',
+                    averageDownloadUsageOverTime: ((currentAverageDownloadUsageWithinSeconds / 1000 / 1000) * 8).toFixed(2) + ' Mbps',
+                    averageUploadUsageOverTime: ((currentAverageUploadUsageWithinSeconds / 1000 / 1000) * 8).toFixed(2) + ' Mbps'
                 })
         }, config.notificationInterval);
         return true;
@@ -195,6 +212,11 @@ async function initNetworkCheck(configuration) {
         // // console.log(error)
         return false;
     }
+}
+function average(a, n) {
+    var sum = 0;
+    for (var i = 0; i < n; i++) sum += a[i];
+    return Math.round(parseFloat(sum / n));
 }
 function getDataUsage() {
     return new Promise((resolve, reject) => {

@@ -58,6 +58,12 @@ console.log(data);
 
 + "alpine" : sử dụng alpine distro
 
+5. averageUsageWithinSeconds: input number là số thời gian tính bằng giây dùng để đo tốc độ trung bình trong 1 khoảng thời gian quy định.
+
++ "ubuntu" : sử dụng ubuntu distro
+
++ "alpine" : sử dụng alpine distro
+
 - Sau khi sử dụng hàm init thì có thể subscribe vào usageNotifier để nhận tin push về băng thông cũng như lưu lượng sử dụng thực tế theo mỗi giây. Mẫu data nhận được:
 
   
