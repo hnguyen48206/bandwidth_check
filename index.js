@@ -64,7 +64,7 @@ function initUsageNotification() {
                 extractRXTXLinux_Ubuntu(res).then(usage => {
                     let down;
                     let up;
-                    console.log(res)
+                    console.log(usage)
                     if (config.IP != null) {
                         for (let i = 0; i < usage.networkInterface.length; ++i) {
                             if (usage.networkInterface[i].includes(config.IP)) {
