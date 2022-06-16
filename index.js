@@ -163,11 +163,12 @@ async function initNetworkCheck(configuration) {
             })
         }
         else if (config.testType == 'speedtest') {
-            let browser = await puppeteer.launch({
-                headless: true,
-                args: ['--single-process', '--no-zygote', '--no-sandbox', '--headless', '--disable-gpu', '--disable-setuid-sandbox']
-            })
+            let browser = null
             try {
+                browser = await puppeteer.launch({
+                    headless: true,
+                    args: ['--single-process', '--no-zygote', '--no-sandbox', '--headless', '--disable-gpu', '--disable-setuid-sandbox']
+                })
                 let page = await browser.newPage();
                 page.setDefaultNavigationTimeout(0);
                 await page.setCacheEnabled(false);
@@ -186,6 +187,7 @@ async function initNetworkCheck(configuration) {
                 currentTotalUploadSpeed = uploadSpeed;
                 browser.close();
             } catch (error) {
+                if(browser!=null)
                 browser.close();
                 throw error;
             }
