@@ -62,83 +62,55 @@ function initUsageNotification() {
         else {
             if (config.linuxDistro == 'ubuntu') {
                 extractRXTXLinux_Ubuntu(res).then(usage => {
-                    let down;
-                    let up;
-                    console.log(usage)
-                    if (config.IP != null) {
-                        for (let i = 0; i < usage.networkInterface.length; ++i) {
-                            if (usage.networkInterface[i].includes(config.IP)) {
-                                // console.log(config.IP);
-                                down = usage.speedArray[i * 2];
-                                up = usage.speedArray[i * 2 + 1];
-                                break;
-                            }
-                        }
-                    }
-                    else {
-                        // console.log(config.IP);
-                        down = usage.speedArray[0];
-                        up = usage.speedArray[1];
-                    }
-
-                    if (currentRecieve == null) {
-                        currentRecieve = Number(down);
-                        currentSend = Number(up);
-                    }
-                    else {
-                        if (Number(usage[0]) - currentRecieve > 0)
-                            currentDownloadUsage = Number(usage[0]) - currentRecieve;
-                        else
-                            currentDownloadUsage = 0
-                        if (currentUploadUsage = Number(usage[1]) - currentSend > 0)
-                            currentUploadUsage = Number(usage[1]) - currentSend;
-                        else
-                            currentUploadUsage = 0
-                        currentRecieve = Number(usage[0]);
-                        currentSend = Number(usage[1]);
-                    }
+                    processUsageData(usage);
                 });
             }
             else if (config.linuxDistro == 'alpine') {
                 extractRXTXLinux_Alpine(res).then(usage => {
-                    let down;
-                    let up;
-                    if (config.IP != null) {
-                        for (let i = 0; i < usage.networkInterface.length; ++i) {
-                            if (usage.networkInterface[i].includes(config.IP)) {
-                                // console.log(config.IP);
-                                down = usage.speedArray[i * 2];
-                                up = usage.speedArray[i * 2 + 1];
-                                break;
-                            }
-                        }
-                    }
-                    else {
-                        // console.log(config.IP);
-                        down = usage.speedArray[0];
-                        up = usage.speedArray[1];
-                    }
-
-                    if (currentRecieve == null) {
-                        currentRecieve = Number(down);
-                        currentSend = Number(up);
-                    }
-                    else {
-                        if (Number(usage[0]) - currentRecieve > 0)
-                            currentDownloadUsage = Number(usage[0]) - currentRecieve;
-                        else
-                            currentDownloadUsage = 0
-                        if (currentUploadUsage = Number(usage[1]) - currentSend > 0)
-                            currentUploadUsage = Number(usage[1]) - currentSend;
-                        else
-                            currentUploadUsage = 0
-                        currentRecieve = Number(usage[0]);
-                        currentSend = Number(usage[1]);
-                    }
+                    processUsageData(usage);
                 });
             }
         }
     });
+}
+
+function processUsageData(usage)
+{
+    let down;
+    let up;
+    if (config.IP != null) {
+        for (let i = 0; i < usage.networkInterface.length; ++i) {
+            if (usage.networkInterface[i].includes(config.IP)) {
+                // console.log(config.IP);
+                down = Number(usage.speedArray[i * 2]);
+                up = Number(usage.speedArray[i * 2 + 1]);
+                break;
+            }
+        }
+    }
+    else {
+        // console.log(config.IP);
+        down = Number(usage.speedArray[0]);
+        up = Number(usage.speedArray[1]);
+    }
+    // console.log('current Down:', down)
+    // console.log('current Up:', up)
+    if (currentRecieve == null) {
+        currentRecieve = Number(down);
+        currentSend = Number(up);
+    }
+    else {
+        if (down - currentRecieve > 0)
+            currentDownloadUsage = down - currentRecieve;
+        else
+            currentDownloadUsage = 0
+        if (up - currentSend > 0)
+            currentUploadUsage = up - currentSend;
+        else
+            currentUploadUsage = 0
+        currentRecieve = Number(down);
+        currentSend = Number(up);
+    }
 }
 async function initNetworkCheck(configuration) {
     if (configuration != null) {
