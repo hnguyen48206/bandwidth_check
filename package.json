@@ -14,7 +14,6 @@
     "form-data": "^4.0.0",
     "i": "^0.3.7",
     "npm": "^8.12.2",
-    "puppeteer": "^13.7.0",
     "speed-cloudflare-cli": "github:hnguyen48206/speed-cloudflare-cli"
   }
 }
