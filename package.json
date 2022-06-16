@@ -10,9 +10,8 @@
   "license": "ISC",
   "dependencies": {
     "axios": "^0.27.2",
-    "fast-speedtest-api": "^0.3.2",
     "form-data": "^4.0.0",
     "puppeteer": "^13.7.0",
-    "speed-cloudflare-cli": "^2.0.3"
+    "speed-cloudflare-cli": "github:hnguyen48206/speed-cloudflare-cli"
   }
 }
