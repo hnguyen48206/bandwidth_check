@@ -35,7 +35,8 @@ var speedtest = new FastSpeedtest({
 var config = {
     IP: null,
     notificationInterval: 1000,
-    testType: 'self'
+    testType: 'self',
+    linuxDistro: 'ubuntu'
 }
 function initUsageNotification() {
     getDataUsage().then(res => {
@@ -59,43 +60,82 @@ function initUsageNotification() {
             }
         }
         else {
-            extractRXTXLinux_Alpine(res).then(usage=>{
-                let down;
-                let up;
-                if (config.IP != null) {
-                    for (let i = 0; i < usage.networkInterface.length; ++i) {
-                        if (usage.networkInterface[i].includes(config.IP)) {
-                            // console.log(config.IP);
-                            down = usage.speedArray[i * 2];
-                            up = usage.speedArray[i * 2 + 1];
-                            break;
+            if (config.linuxDistro == 'ubuntu') {
+                extractRXTXLinux_Ubuntu(res).then(usage => {
+                    let down;
+                    let up;
+                    if (config.IP != null) {
+                        for (let i = 0; i < usage.networkInterface.length; ++i) {
+                            if (usage.networkInterface[i].includes(config.IP)) {
+                                // console.log(config.IP);
+                                down = usage.speedArray[i * 2];
+                                up = usage.speedArray[i * 2 + 1];
+                                break;
+                            }
                         }
                     }
-                }
-                else {
-                    // console.log(config.IP);
-                    down = usage.speedArray[0];
-                    up = usage.speedArray[1];
-                }
-    
-                if (currentRecieve == null) {
-                    currentRecieve = Number(down);
-                    currentSend = Number(up);
-                }
-                else {
-                    if (Number(usage[0]) - currentRecieve > 0)
-                        currentDownloadUsage = Number(usage[0]) - currentRecieve;
-                    else
-                        currentDownloadUsage = 0
-                    if (currentUploadUsage = Number(usage[1]) - currentSend > 0)
-                        currentUploadUsage = Number(usage[1]) - currentSend;
-                    else
-                        currentUploadUsage = 0
-                    currentRecieve = Number(usage[0]);
-                    currentSend = Number(usage[1]);
-                }
-            });
+                    else {
+                        // console.log(config.IP);
+                        down = usage.speedArray[0];
+                        up = usage.speedArray[1];
+                    }
 
+                    if (currentRecieve == null) {
+                        currentRecieve = Number(down);
+                        currentSend = Number(up);
+                    }
+                    else {
+                        if (Number(usage[0]) - currentRecieve > 0)
+                            currentDownloadUsage = Number(usage[0]) - currentRecieve;
+                        else
+                            currentDownloadUsage = 0
+                        if (currentUploadUsage = Number(usage[1]) - currentSend > 0)
+                            currentUploadUsage = Number(usage[1]) - currentSend;
+                        else
+                            currentUploadUsage = 0
+                        currentRecieve = Number(usage[0]);
+                        currentSend = Number(usage[1]);
+                    }
+                });
+            }
+            else if (config.linuxDistro == 'alpine') {
+                extractRXTXLinux_Alpine(res).then(usage => {
+                    let down;
+                    let up;
+                    if (config.IP != null) {
+                        for (let i = 0; i < usage.networkInterface.length; ++i) {
+                            if (usage.networkInterface[i].includes(config.IP)) {
+                                // console.log(config.IP);
+                                down = usage.speedArray[i * 2];
+                                up = usage.speedArray[i * 2 + 1];
+                                break;
+                            }
+                        }
+                    }
+                    else {
+                        // console.log(config.IP);
+                        down = usage.speedArray[0];
+                        up = usage.speedArray[1];
+                    }
+
+                    if (currentRecieve == null) {
+                        currentRecieve = Number(down);
+                        currentSend = Number(up);
+                    }
+                    else {
+                        if (Number(usage[0]) - currentRecieve > 0)
+                            currentDownloadUsage = Number(usage[0]) - currentRecieve;
+                        else
+                            currentDownloadUsage = 0
+                        if (currentUploadUsage = Number(usage[1]) - currentSend > 0)
+                            currentUploadUsage = Number(usage[1]) - currentSend;
+                        else
+                            currentUploadUsage = 0
+                        currentRecieve = Number(usage[0]);
+                        currentSend = Number(usage[1]);
+                    }
+                });
+            }
         }
     });
 }
@@ -107,6 +147,8 @@ async function initNetworkCheck(configuration) {
             config.notificationInterval = configuration.notificationInterval
         if (configuration.testType != null)
             config.testType = configuration.testType
+        if (configuration.linuxDistro != null)
+            config.linuxDistro = configuration.linuxDistro
     }
 
     if (currentCheckIntervalSetup != null)
@@ -206,8 +248,7 @@ async function extractRXTXLinux_Alpine(srcStr) {
 
     let interfaces = await getLinuxInterfacesList();
     let ipStart = []
-    for(let i=0;i<interfaces.length;++i)
-    {
+    for (let i = 0; i < interfaces.length; ++i) {
         ipStart = ipStart.concat(indexes(srcStr, interfaces[i]))
     }
     let ipEnd = indexes(srcStr, 'collisions');
@@ -238,16 +279,43 @@ async function extractRXTXLinux_Alpine(srcStr) {
     }
 }
 function extractRXTXLinux_Ubuntu(srcStr) {
-    let startRes = indexes(srcStr, 'bytes');
-    let endRes = indexes(srcStr, ' (');
+    //// find IP list
+    let startRes = indexes(srcStr, 'encap');
+    let endRes = indexes(srcStr, 'Mask');
+    let networkInterface = [];
+    if (startRes.length === endRes.length) {
+        for (let i = 0; i < startRes.length; ++i) {
+            let subIPWithExtra = srcStr.substring(startRes[i], endRes[i]);
+            networkInterface.push(subIPWithExtra)
+        }
+    }
+    for (let x = 0; x < networkInterface.length; ++x) {
+        let subIPWithExtra = networkInterface[x];
+        let substartRes = subIPWithExtra.lastIndexOf('addr:');
+        let subendRes
+        for (let i = substartRes; i < subIPWithExtra.length; i++) {
+            if (subIPWithExtra[i] === ' ') {
+                subendRes = i; break
+            }
+        }
+        networkInterface[x] = subIPWithExtra.slice(substartRes + 5, subendRes);
+    }
+
+    /// find spedd list
+    startRes = indexes(srcStr, 'bytes');
+    endRes = indexes(srcStr, ' (');
     let result = []
     if (startRes.length == endRes.length) {
         for (let i = 0; i < startRes.length; ++i) {
             result.push(srcStr.substring(startRes[i], endRes[i]).replace('bytes:', ''))
         }
     }
-    return result
+    return {
+        speedArray: result,
+        networkInterface: networkInterface
+    }
 }
+
 function extractRXTXWin(srcStr) {
     let startRes = indexes(srcStr, 'Bytes');
     let endRes = indexes(srcStr, `Unicast`);
@@ -286,7 +354,7 @@ function getLinuxInterfacesList() {
                 // // console.log(stderr);
                 reject(null);
             }
-            let arr = stdout.toString().replace(/\s+/g, ' ').trim().split(' ').filter(function(e) { return e !== 'bonding_masters' });
+            let arr = stdout.toString().replace(/\s+/g, ' ').trim().split(' ').filter(function (e) { return e !== 'bonding_masters' });
             // console.log(arr)
             resolve(arr);
         });
