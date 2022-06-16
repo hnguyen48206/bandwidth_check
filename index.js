@@ -101,13 +101,13 @@ function processUsageData(usage)
     }
     else {
         if (down - currentRecieve > 0)
-            currentDownloadUsage = down - currentRecieve;
+            currentDownloadUsage = currentRecieve + (down - currentRecieve);
         else
-            currentDownloadUsage = 0
+            currentDownloadUsage = currentRecieve
         if (up - currentSend > 0)
-            currentUploadUsage = up - currentSend;
+            currentUploadUsage = currentSend + (up - currentSend);
         else
-            currentUploadUsage = 0
+            currentUploadUsage = currentSend
         currentRecieve = Number(down);
         currentSend = Number(up);
     }
