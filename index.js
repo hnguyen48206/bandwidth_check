@@ -167,7 +167,7 @@ async function initNetworkCheck(configuration) {
             try {
                 browser = await puppeteer.launch({
                     headless: true,
-                    args: ['--single-process', '--no-zygote', '--no-sandbox', '--headless', '--disable-gpu', '--disable-setuid-sandbox']
+                    args: ['--single-process', '--no-zygote', '--no-sandbox', '--headless', '--disable-gpu', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
                 })
                 let page = await browser.newPage();
                 page.setDefaultNavigationTimeout(0);
