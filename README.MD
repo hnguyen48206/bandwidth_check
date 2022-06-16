@@ -18,7 +18,9 @@ bandwidthcheck.initNetworkCheck(
 
 notificationInterval: 5000,
 
-testType: 'speedtest'
+testType: 'speedtest',
+
+linuxDistro: 'ubuntu'
 
 }).then(res => {
 
@@ -49,6 +51,12 @@ console.log(data);
 + "cloudflare" : sử dụng api của cloudflare.
 
 + "speedtest" : scraping data của speedtest.
+
+4. linuxDistro: input string có thể dùng 1 trong 2 giá trị sau để xác định đang dùng distro nào của linux
+
++ "ubuntu" : sử dụng ubuntu distro
+
++ "alpine" : sử dụng alpine distro
 
 - Sau khi sử dụng hàm init thì có thể subscribe vào usageNotifier để nhận tin push về băng thông cũng như lưu lượng sử dụng thực tế theo mỗi giây. Mẫu data nhận được:
 
