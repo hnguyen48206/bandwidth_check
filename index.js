@@ -152,7 +152,8 @@ async function initNetworkCheck(configuration) {
         else if (config.testType == 'fast') {
             currentTotalDownloadSpeed = await speedtest.getSpeed();
             currentTotalDownloadSpeed = currentTotalDownloadSpeed.toFixed(2);
-            currentTotalUploadSpeed = await getUploadSpeed();
+            // currentTotalUploadSpeed = await getUploadSpeed();
+            currentTotalUploadSpeed = await (await cloudFlare()).uploadSpeed;
         }
         else if (config.testType == 'cloudflare') {
             cloudFlare().then(res => {
