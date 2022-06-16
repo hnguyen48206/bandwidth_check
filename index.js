@@ -6,7 +6,6 @@ const EventEmitter = require('events');
 const FastSpeedtest = require("fast-speedtest-api");
 const cloudFlare = require('speed-cloudflare-cli');
 const puppeteer = require('puppeteer');
-const { average } = require("fast-speedtest-api");
 const imageAddr = 'downloadFileByFileID/627485144dee070016d23bb8';
 const downloadSize = 10506316;
 var startTime = null;
