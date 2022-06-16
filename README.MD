@@ -78,6 +78,10 @@ uploadBandwidth: '743.88 Mbps',
 
 currentDownloadUsage: '74.53 Mbps',
 
-currentUploadUsage: '1.41 Mbps'
+currentUploadUsage: '1.41 Mbps',
+
+averageDownloadUsageOverTime: '0.00 Mbps',
+
+averageUploadUsageOverTime: '0.00 Mbps'
 
 }
