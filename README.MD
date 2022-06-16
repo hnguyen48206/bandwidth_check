@@ -20,7 +20,9 @@ notificationInterval: 5000,
 
 testType: 'speedtest',
 
-linuxDistro: 'ubuntu'
+linuxDistro: 'ubuntu',
+
+averageUsageWithinSeconds: 10
 
 }).then(res => {
 
