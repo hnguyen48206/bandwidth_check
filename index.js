@@ -73,6 +73,7 @@ function initUsageNotification() {
         else {
             if (config.linuxDistro == 'ubuntu') {
                 extractRXTXLinux_Ubuntu(res).then(usage => {
+                    if(usage!=null)
                     processUsageData(usage);
                 });
             }
@@ -86,25 +87,50 @@ function initUsageNotification() {
 }
 
 function processUsageData(usage) {
-    let down;
-    let up;
+    // let down;
+    // let up;
+    // if (config.IP != null) {
+    //     for (let i = 0; i < usage.networkInterface.length; ++i) {
+    //         if (usage.networkInterface[i].includes(config.IP)) {
+    //             // console.log(config.IP);
+    //             down = Number(usage.speedArray[i * 2]);
+    //             up = Number(usage.speedArray[i * 2 + 1]);
+    //             break;
+    //         }
+    //     }
+    // }
+    // else {
+    //     // console.log(config.IP);
+    //     down = Number(usage.speedArray[0]);
+    //     up = Number(usage.speedArray[1]);
+    // }
+   
+    let down
+    let up
     if (config.IP != null) {
-        for (let i = 0; i < usage.networkInterface.length; ++i) {
-            if (usage.networkInterface[i].includes(config.IP)) {
-                // console.log(config.IP);
-                down = Number(usage.speedArray[i * 2]);
-                up = Number(usage.speedArray[i * 2 + 1]);
-                break;
+        let ifaceName
+        for(let i=0;i<usage.interfaces;++i)
+        {
+            if(usage.interfaces[i].ip4 == config.IP)
+            {
+                ifaceName = usage.interfaces[i].iface; break;
+            }
+        }
+        for(let i=0;i<usage.rxtx;++i)
+        {
+            if(usage.rxtx[i].iface == ifaceName)
+            {
+                down =  usage.rxtx[i].rx_bytes;
+                up =  usage.rxtx[i].tx_bytes;
             }
         }
     }
-    else {
-        // console.log(config.IP);
-        down = Number(usage.speedArray[0]);
-        up = Number(usage.speedArray[1]);
+    else
+    {
+        down =  usage.rxtx[0].rx_bytes;
+        up =  usage.rxtx[0].tx_bytes;
     }
-    // console.log('current Down:', down)
-    // console.log('current Up:', up)
+
     if (currentRecieve == null) {
         currentRecieve = Number(down);
         currentSend = Number(up);
@@ -121,6 +147,7 @@ function processUsageData(usage) {
         currentRecieve = Number(down);
         currentSend = Number(up);
     }
+
     averageDownloadSpeedArray.push(currentDownloadUsage);
     averageUploadSpeedArray.push(currentUploadUsage);
     if (averageDownloadSpeedArray.length == config.averageUsageWithinSeconds) {
@@ -220,12 +247,12 @@ async function initNetworkCheck(configuration) {
                 let result = await speedTest({
                     acceptLicense: true
                 });
-                currentTotalDownloadSpeed = ((result.download.bandwidth/ 1000 / 1000) * 8).toFixed(2);
-                currentTotalUploadSpeed = ((result.upload.bandwidth/ 1000 / 1000) * 8).toFixed(2);
+                currentTotalDownloadSpeed = ((result.download.bandwidth / 1000 / 1000) * 8).toFixed(2);
+                currentTotalUploadSpeed = ((result.upload.bandwidth / 1000 / 1000) * 8).toFixed(2);
             } catch (error) {
                 throw error;
             }
-            
+
         }
         currentCheckIntervalSetup = setInterval(function () {
             if (currentTotalDownloadSpeed != null && currentTotalUploadSpeed != null)
@@ -348,23 +375,15 @@ async function extractRXTXLinux_Ubuntu_GUI(srcStr) {
     }
 }
 async function extractRXTXLinux_Ubuntu(srcStr) {
-    // let interfaces = await si.networkInterfaces();
-    // let result = networkStats([{intefaceList[0].iface}]);
-    si.networkInterfaces()
-    .then(data => {
-        console.log(data)
-        let intefaceList = data;
-        
-        si.networkStats().then(data => {
-            console.log(data);
-          })
-    }    
-    )
-    .catch(error => console.error(error));
-
-    si.networkStats(ifaces,cb)
-
-
+    try {
+        let interfaces = await si.networkInterfaces();
+        let result = networkStats();
+        return { interfaces: interfaces,
+            rxtx: result
+        }
+    } catch (error) {
+        return null
+    }
     //// find IP list
     // let startRes = indexes(srcStr, 'encap');
     // let endRes = indexes(srcStr, 'Mask');
