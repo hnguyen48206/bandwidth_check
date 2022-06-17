@@ -350,8 +350,19 @@ async function extractRXTXLinux_Ubuntu_GUI(srcStr) {
 async function extractRXTXLinux_Ubuntu(srcStr) {
 
     si.networkInterfaces()
-    .then(data => console.log(data))
+    .then(data => {
+        console.log(data)
+        let intefaceList = data;
+        
+        si.networkStats([intefaceList[0]]).then(data => {
+            console.log(data);
+          })
+    }    
+    )
     .catch(error => console.error(error));
+
+    si.networkStats(ifaces,cb)
+
 
     //// find IP list
     // let startRes = indexes(srcStr, 'encap');
