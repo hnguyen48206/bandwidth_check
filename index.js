@@ -348,13 +348,14 @@ async function extractRXTXLinux_Ubuntu_GUI(srcStr) {
     }
 }
 async function extractRXTXLinux_Ubuntu(srcStr) {
-
+    // let interfaces = await si.networkInterfaces();
+    // let result = networkStats([{intefaceList[0].iface}]);
     si.networkInterfaces()
     .then(data => {
         console.log(data)
         let intefaceList = data;
         
-        si.networkStats([intefaceList[0]]).then(data => {
+        si.networkStats().then(data => {
             console.log(data);
           })
     }    
