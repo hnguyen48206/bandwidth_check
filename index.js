@@ -122,6 +122,7 @@ function processUsageData(usage) {
             {
                 down =  usage.rxtx[i].rx_bytes;
                 up =  usage.rxtx[i].tx_bytes;
+                break;
             }
         }
     }
