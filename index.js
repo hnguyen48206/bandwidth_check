@@ -46,7 +46,9 @@ var currentAverageUploadUsageWithinSeconds = 0
 const { UniversalSpeedtest, SpeedUnits } = require('universal-speedtest');
 // const speedTest = require('speedtest-net');
 
-var universalSpeedtest
+// var universalSpeedtest
+const si = require('systeminformation');
+
 function initUsageNotification() {
     getDataUsage().then(res => {
         if (os.platform() == 'win32') {
@@ -308,7 +310,7 @@ async function extractRXTXLinux_Alpine(srcStr) {
         networkInterface: networkInterface
     }
 }
-async function extractRXTXLinux_Ubuntu(srcStr) {
+async function extractRXTXLinux_Ubuntu_GUI(srcStr) {
     //// find IP list
     let startRes = indexes(srcStr, 'encap');
     let endRes = indexes(srcStr, 'Mask');
@@ -344,6 +346,48 @@ async function extractRXTXLinux_Ubuntu(srcStr) {
         speedArray: result,
         networkInterface: networkInterface
     }
+}
+async function extractRXTXLinux_Ubuntu(srcStr) {
+
+    si.networkInterfaces()
+    .then(data => console.log(data))
+    .catch(error => console.error(error));
+
+    //// find IP list
+    // let startRes = indexes(srcStr, 'encap');
+    // let endRes = indexes(srcStr, 'Mask');
+    // let networkInterface = [];
+    // if (startRes.length === endRes.length) {
+    //     for (let i = 0; i < startRes.length; ++i) {
+    //         let subIPWithExtra = srcStr.substring(startRes[i], endRes[i]);
+    //         networkInterface.push(subIPWithExtra)
+    //     }
+    // }
+    // for (let x = 0; x < networkInterface.length; ++x) {
+    //     let subIPWithExtra = networkInterface[x];
+    //     let substartRes = subIPWithExtra.lastIndexOf('addr:');
+    //     let subendRes
+    //     for (let i = substartRes; i < subIPWithExtra.length; i++) {
+    //         if (subIPWithExtra[i] === ' ') {
+    //             subendRes = i; break
+    //         }
+    //     }
+    //     networkInterface[x] = subIPWithExtra.slice(substartRes + 5, subendRes);
+    // }
+
+    // /// find spedd list
+    // startRes = indexes(srcStr, 'bytes');
+    // endRes = indexes(srcStr, ' (');
+    // let result = []
+    // if (startRes.length == endRes.length) {
+    //     for (let i = 0; i < startRes.length; ++i) {
+    //         result.push(srcStr.substring(startRes[i], endRes[i]).replace('bytes:', ''))
+    //     }
+    // }
+    // return {
+    //     speedArray: result,
+    //     networkInterface: networkInterface
+    // }
 }
 function extractRXTXWin(srcStr) {
     let startRes = indexes(srcStr, 'Bytes');
