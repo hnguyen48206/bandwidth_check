@@ -44,7 +44,7 @@ var averageUploadSpeedArray = []
 var currentAverageDownloadUsageWithinSeconds = 0
 var currentAverageUploadUsageWithinSeconds = 0
 const { UniversalSpeedtest, SpeedUnits } = require('universal-speedtest');
-const speedTest = require('speedtest-net');
+// const speedTest = require('speedtest-net');
 
 var universalSpeedtest
 function initUsageNotification() {
@@ -166,7 +166,7 @@ async function initNetworkCheck(configuration) {
                 throw err;
             })
         }
-        else if (config.testType == 'speedtest_manual') {
+        else if (config.testType == 'speedtest') {
             let browser = null
             try {
                 browser = await puppeteer.launch({
@@ -196,23 +196,23 @@ async function initNetworkCheck(configuration) {
                 throw error;
             }
         }
-        else if (config.testType == 'universal') {
-            if (universalSpeedtest == null)
-                universalSpeedtest = new UniversalSpeedtest({
-                    measureUpload: true,
-                    downloadUnit: SpeedUnits.MBps,
-                    wait: true
-                });
-            universalSpeedtest.runSpeedtestNet().then(result => {
-                // console.log(`Ping: ${result.ping} ms`);
-                // console.log(`Download speed: ${result.downloadSpeed} MBps`);
-                // console.log(`Upload speed: ${result.uploadSpeed} Mbps`);
-                currentTotalDownloadSpeed = result.downloadSpeed.toFixed(2);
-                currentTotalUploadSpeed = result.uploadSpeed.toFixed(2);
-            }).catch(e => {
-                throw e
-            });
-        }
+        // else if (config.testType == 'universal') {
+        //     if (universalSpeedtest == null)
+        //         universalSpeedtest = new UniversalSpeedtest({
+        //             measureUpload: true,
+        //             downloadUnit: SpeedUnits.MBps,
+        //             wait: true
+        //         });
+        //     universalSpeedtest.runSpeedtestNet().then(result => {
+        //         // console.log(`Ping: ${result.ping} ms`);
+        //         // console.log(`Download speed: ${result.downloadSpeed} MBps`);
+        //         // console.log(`Upload speed: ${result.uploadSpeed} Mbps`);
+        //         currentTotalDownloadSpeed = result.downloadSpeed.toFixed(2);
+        //         currentTotalUploadSpeed = result.uploadSpeed.toFixed(2);
+        //     }).catch(e => {
+        //         throw e
+        //     });
+        // }
         else if (config.testType == 'speedtest') {
             try {
                 let result = await speedTest({
