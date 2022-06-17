@@ -44,7 +44,9 @@ var averageUploadSpeedArray = []
 var currentAverageDownloadUsageWithinSeconds = 0
 var currentAverageUploadUsageWithinSeconds = 0
 const { UniversalSpeedtest, SpeedUnits } = require('universal-speedtest');
-var universalSpeedtest 
+const speedTest = require('speedtest-net');
+
+var universalSpeedtest
 function initUsageNotification() {
     getDataUsage().then(res => {
         if (os.platform() == 'win32') {
@@ -164,7 +166,7 @@ async function initNetworkCheck(configuration) {
                 throw err;
             })
         }
-        else if (config.testType == 'speedtest') {
+        else if (config.testType == 'speedtest_manual') {
             let browser = null
             try {
                 browser = await puppeteer.launch({
@@ -189,18 +191,18 @@ async function initNetworkCheck(configuration) {
                 currentTotalUploadSpeed = uploadSpeed;
                 browser.close();
             } catch (error) {
-                if(browser!=null)
-                browser.close();
+                if (browser != null)
+                    browser.close();
                 throw error;
             }
         }
         else if (config.testType == 'universal') {
-            if(universalSpeedtest==null)
-            universalSpeedtest = new UniversalSpeedtest({
-                measureUpload: true,
-                downloadUnit: SpeedUnits.MBps,
-                wait: true
-            });
+            if (universalSpeedtest == null)
+                universalSpeedtest = new UniversalSpeedtest({
+                    measureUpload: true,
+                    downloadUnit: SpeedUnits.MBps,
+                    wait: true
+                });
             universalSpeedtest.runSpeedtestNet().then(result => {
                 // console.log(`Ping: ${result.ping} ms`);
                 // console.log(`Download speed: ${result.downloadSpeed} MBps`);
@@ -210,6 +212,18 @@ async function initNetworkCheck(configuration) {
             }).catch(e => {
                 throw e
             });
+        }
+        else if (config.testType == 'speedtest') {
+            try {
+                let result = await speedTest({
+                    acceptLicense: true
+                });
+                currentTotalDownloadSpeed = ((result.download.bandwidth/ 1000 / 1000) * 8).toFixed(2);
+                currentTotalUploadSpeed = ((result.upload.bandwidth/ 1000 / 1000) * 8).toFixed(2);
+            } catch (error) {
+                throw error;
+            }
+            
         }
         currentCheckIntervalSetup = setInterval(function () {
             if (currentTotalDownloadSpeed != null && currentTotalUploadSpeed != null)
