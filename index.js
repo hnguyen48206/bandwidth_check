@@ -378,7 +378,7 @@ async function extractRXTXLinux_Ubuntu_GUI(srcStr) {
 async function extractRXTXLinux_Ubuntu(srcStr) {
     try {
         let interfaces = await si.networkInterfaces();
-        let result = networkStats();
+        let result = await si.networkStats();
         return { interfaces: interfaces,
             rxtx: result
         }
