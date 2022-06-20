@@ -46,7 +46,7 @@ var currentAverageUploadUsageWithinSeconds = 0
 const { UniversalSpeedtest, SpeedUnits } = require('universal-speedtest');
 // const speedTest = require('speedtest-net');
 
-// var universalSpeedtest
+var universalSpeedtest
 const si = require('systeminformation');
 
 function initUsageNotification() {
@@ -115,7 +115,7 @@ function processUsageDataGeneral(usage)
         {
             if(usage.rxtx[i].iface == ifaceName)
             {
-                console.log('Đã tìm thấy interface phù hợp')
+                // console.log('Đã tìm thấy interface phù hợp')
                 down =  usage.rxtx[i].rx_bytes;
                 up =  usage.rxtx[i].tx_bytes;
                 break;
@@ -236,7 +236,7 @@ async function initNetworkCheck(configuration) {
                 throw err;
             })
         }
-        else if (config.testType == 'speedtest') {
+        else if (config.testType == 'speedtest' && config.linuxDistro == 'ubuntu') {
             let browser = null
             try {
                 browser = await puppeteer.launch({
@@ -266,35 +266,35 @@ async function initNetworkCheck(configuration) {
                 throw error;
             }
         }
-        // else if (config.testType == 'universal') {
-        //     if (universalSpeedtest == null)
-        //         universalSpeedtest = new UniversalSpeedtest({
-        //             measureUpload: true,
-        //             downloadUnit: SpeedUnits.MBps,
-        //             wait: true
-        //         });
-        //     universalSpeedtest.runSpeedtestNet().then(result => {
-        //         // console.log(`Ping: ${result.ping} ms`);
-        //         // console.log(`Download speed: ${result.downloadSpeed} MBps`);
-        //         // console.log(`Upload speed: ${result.uploadSpeed} Mbps`);
-        //         currentTotalDownloadSpeed = result.downloadSpeed.toFixed(2);
-        //         currentTotalUploadSpeed = result.uploadSpeed.toFixed(2);
-        //     }).catch(e => {
-        //         throw e
-        //     });
-        // }
-        else if (config.testType == 'speedtest') {
-            try {
-                let result = await speedTest({
-                    acceptLicense: true
+        else if (config.testType == 'speedtest' && config.linuxDistro == 'alpine') {
+            if (universalSpeedtest == null)
+                universalSpeedtest = new UniversalSpeedtest({
+                    measureUpload: true,
+                    downloadUnit: SpeedUnits.MBps,
+                    wait: true
                 });
-                currentTotalDownloadSpeed = ((result.download.bandwidth / 1000 / 1000) * 8).toFixed(2);
-                currentTotalUploadSpeed = ((result.upload.bandwidth / 1000 / 1000) * 8).toFixed(2);
-            } catch (error) {
-                throw error;
-            }
-
+            universalSpeedtest.runSpeedtestNet().then(result => {
+                console.log(`Ping: ${result.ping} ms`);
+                console.log(`Download speed: ${result.downloadSpeed} MBps`);
+                console.log(`Upload speed: ${result.uploadSpeed} Mbps`);
+                currentTotalDownloadSpeed = result.downloadSpeed.toFixed(2);
+                currentTotalUploadSpeed = result.uploadSpeed.toFixed(2);
+            }).catch(e => {
+                throw e
+            });
         }
+        // else if (config.testType == 'speedtest') {
+        //     try {
+        //         let result = await speedTest({
+        //             acceptLicense: true
+        //         });
+        //         currentTotalDownloadSpeed = ((result.download.bandwidth / 1000 / 1000) * 8).toFixed(2);
+        //         currentTotalUploadSpeed = ((result.upload.bandwidth / 1000 / 1000) * 8).toFixed(2);
+        //     } catch (error) {
+        //         throw error;
+        //     }
+
+        // }
         currentCheckIntervalSetup = setInterval(function () {
             if (currentTotalDownloadSpeed != null && currentTotalUploadSpeed != null)
                 initUsageNotification();
