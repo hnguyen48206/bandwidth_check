@@ -52,23 +52,28 @@ const si = require('systeminformation');
 function initUsageNotification() {
     getDataUsage().then(res => {
         if (os.platform() == 'win32') {
-            let usage = extractRXTXWin(res);
-            if (currentRecieve == null) {
-                currentRecieve = Number(usage[0]);
-                currentSend = Number(usage[1]);
-            }
-            else {
-                if (Number(usage[0]) - currentRecieve > 0)
-                    currentDownloadUsage = Number(usage[0]) - currentRecieve;
-                else
-                    currentDownloadUsage = 0
-                if (currentUploadUsage = Number(usage[1]) - currentSend > 0)
-                    currentUploadUsage = Number(usage[1]) - currentSend;
-                else
-                    currentUploadUsage = 0
-                currentRecieve = Number(usage[0]);
-                currentSend = Number(usage[1]);
-            }
+            extract_network_general().then(usage => {
+                if(usage!=null)
+                processUsageData(usage);
+            });
+
+            // let usage = extractRXTXWin(res);
+            // if (currentRecieve == null) {
+            //     currentRecieve = Number(usage[0]);
+            //     currentSend = Number(usage[1]);
+            // }
+            // else {
+            //     if (Number(usage[0]) - currentRecieve > 0)
+            //         currentDownloadUsage = Number(usage[0]) - currentRecieve;
+            //     else
+            //         currentDownloadUsage = 0
+            //     if (currentUploadUsage = Number(usage[1]) - currentSend > 0)
+            //         currentUploadUsage = Number(usage[1]) - currentSend;
+            //     else
+            //         currentUploadUsage = 0
+            //     currentRecieve = Number(usage[0]);
+            //     currentSend = Number(usage[1]);
+            // }
         }
         else {
             if (config.linuxDistro == 'ubuntu') {
@@ -120,6 +125,7 @@ function processUsageData(usage) {
         {
             if(usage.rxtx[i].iface == ifaceName)
             {
+                console.log('Đã tìm thấy interface phù hợp')
                 down =  usage.rxtx[i].rx_bytes;
                 up =  usage.rxtx[i].tx_bytes;
                 break;
@@ -437,6 +443,19 @@ function extractRXTXWin(srcStr) {
         temp = result[0].replace(/  +/g, '|').split('|')
     }
     return temp;
+}
+
+async function extract_network_general() {
+    try {
+        let interfaces = await si.networkInterfaces();
+        let result = await si.networkStats();
+        // console.log(interfaces)
+        return { interfaces: interfaces,
+            rxtx: result
+        }
+    } catch (error) {
+        return null
+    }
 }
 function indexes(source, find) {
     var result = [];
