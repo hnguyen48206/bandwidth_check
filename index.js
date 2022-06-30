@@ -32,6 +32,7 @@ var speedtest = new FastSpeedtest({
     bufferSize: 8, // default: 8
     unit: FastSpeedtest.UNITS.Mbps
 });
+var interfacesList
 var config = {
     IP: null,
     notificationInterval: 1000,
@@ -478,13 +479,13 @@ function extractRXTXWin(srcStr) {
     }
     return temp;
 }
-
 async function extract_network_general() {
     try {
-        let interfaces = await si.networkInterfaces();
+        if(interfacesList==null)
+        interfacesList = await si.networkInterfaces();
         let result = await si.networkStats();
         // console.log(interfaces)
-        return { interfaces: interfaces,
+        return { interfaces: interfacesList,
             rxtx: result
         }
     } catch (error) {
@@ -500,7 +501,6 @@ function indexes(source, find) {
     }
     return result;
 }
-
 function getLinuxInterfacesList() {
     return new Promise((resolve, reject) => {
         exec('ls /sys/class/net', (error, stdout, stderr) => {
